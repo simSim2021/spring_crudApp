@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html >
+<head>
+    <style>
+        table {
+            font-family: arial, sans-serif;
+            border-collapse: collapse;
+            border: 3px;
+            width: 100%;
+            text-align: center;
+        }
+        tr:hover td {
+            background: #D3D3D3;
+        }
+        th {
+            font-size: 20px;
+            font-weight: normal;
+            background: #b9c9fe;
+            border-top: 4px solid #aabcfe;
+            border-bottom: 1px solid white;
+            color: #039;
+            padding: 8px;
+        }
+        td {
+            background: #e8edff;
+            border-bottom: 1px solid white;
+            color: #669;
+            border-top: 1px solid transparent;
+            padding: 8px;
+        }
+
+
+    </style>
+</head>
+<body>
+
+<h1 style="text-align: center; font-weight: 900; color: #483D8B; font-style: italic">Tradefairs</h1>
+
+<table id="tradesList">
+
+</table><br>
+
+<form action="#">
+    <input id="trade_name" placeholder="Trade name">
+    <input id="trade_city" placeholder="Trade city">
+    <input id="trade_place" placeholder="Trade place">
+    <input id="trade_period" placeholder="Trade period">
+    <button onclick="createTrade()">Create Tradefair</button>
+</form><br>
+
+<input id="search_field">
+<button onclick="searchByName()">Search by Name</button>
+<script>
+    function searchByName() {
+        var name = document.getElementById("search_field").value;
+        var xhttp = new XMLHttpRequest();
+        xhttp.onreadystatechange = function () {
+            if (this.readyState == 4 && this.status == 200) {
+                var trade = JSON.parse(this.responseText);
+                var html = '<tr>\n' +
+                    '        <th>Trade id</th>\n' +
+                    '        <th>Trade name</th>\n' +
+                    '        <th>Trade city</th>\n' +
+                    '        <th>Trade place</th>\n' +
+                    '        <th>Trade period</th>\n' +
+                    '        <th>Delete</th>\n' +
+                    '        <th>Edit</th>\n' +
+                    '    </tr>';
+                html = html + '<tr><td>' + trade.id + '</td>\n' +
+                    '        <td>' + trade.name + '</td>\n' +
+                    '        <td>' + trade.city + '</td>\n' +
+                    '        <td>' + trade.place + '</td>' +
+                    '        <td>' + trade.period + '</td>' +
+                    '        <td><button onclick="deleteTrade(' + trade.id + ')">Delete</button></td>' +
+                    '        <td><a href="edit_trade.html + ${trade.id}" target="_blank">Edit</a></td> ' +
+                    '</tr>';
+                document.getElementById("tradesList").innerHTML = html;
+            }
+        };
+        xhttp.open("GET", "http://localhost:8090/trades/findByName?name=" + name, true);
+        xhttp.send();
+    }
+
+    function deleteTrade(tradeId) {
+        var xhttp = new XMLHttpRequest();
+        xhttp.open("DELETE", "http://localhost:8090/trades/delete/" + tradeId, true);
+        xhttp.send();
+    }
+
+    function createTrade() {
+        var tradeName = document.getElementById("trade_name").value;
+        var tradeCity = document.getElementById("trade_city").value;
+        var tradePlace = document.getElementById("trade_place").value;
+        var tradePeriod = document.getElementById("trade_period").value;
+
+        var xmlhttp = new XMLHttpRequest();   // new HttpRequest instance
+        xmlhttp.open("POST", "http://localhost:8090/trades/save");
+        xmlhttp.setRequestHeader("Content-Type", "application/json");
+        xmlhttp.send(JSON.stringify({name: tradeName, city: tradeCity, place: tradePlace, period: tradePeriod}));
+
+        loadTrades();
+    }
+
+    function loadTrades() {
+        var xhttp = new XMLHttpRequest();
+        xhttp.onreadystatechange = function () {
+            if (this.readyState == 4 && this.status == 200) {
+                var trades = JSON.parse(this.responseText);
+                var html = '<tr>\n' +
+                    '        <th>Trade id</th>\n' +
+                    '        <th>Trade name</th>\n' +
+                    '        <th>Trade city</th>\n' +
+                    '        <th>Trade place</th>\n' +
+                    '        <th>Trade period</th>\n' +
+                    '        <th>Delete</th>\n' +
+                    '        <th>Edit</th>\n' +
+                    '    </tr>';
+                for (var i = 0; i < trades.length; i++) {
+                    var trade = trades[i];
+                    console.log(trade);
+                    html = html + '<tr><td>' + trade.id + '</td>\n' +
+                        '        <td>' + trade.name + '</td>\n' +
+                        '        <td>' + trade.city + '</td>\n' +
+                        '        <td>' + trade.place + '</td>' +
+                        '        <td>' + trade.period + '</td>' +
+                        '        <td><button onclick="deleteTrade(' + trade.id + ')">Delete</button></td>' +
+                        '        <td><a href="edit_trade.html + ${trade.id}" target="_blank">Edit</a></td></tr>';
+
+                }
+                document.getElementById("tradesList").innerHTML = html;
+            }
+        };
+        xhttp.open("GET", "http://localhost:8090/trades/findAll", true);
+        xhttp.send();
+    }
+
+    loadTrades();
+</script>
+</body>
+</html>
